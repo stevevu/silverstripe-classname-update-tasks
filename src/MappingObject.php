@@ -51,7 +51,7 @@ class MappingObject
     public function getMappingPath()
     {
         if (!$this->mapping_file_path) {
-            $this->setMappingPath();
+            $this->setMappingPath(); // if code gets here, Exception thrown since setMappingPath() requires an argument
         }
 
         return $this->mapping_file_path;
