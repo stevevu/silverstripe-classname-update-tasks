@@ -5,6 +5,7 @@ namespace Dynamic\ClassNameUpdate;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use Symfony\Component\Yaml\Yaml;
+use SilverStripe\Dev\Debug;
 
 /**
  * Class MappingObject
@@ -50,7 +51,7 @@ class MappingObject
     public function getMappingPath()
     {
         if (!$this->mapping_file_path) {
-            $this->setMappingPath();
+            $this->setMappingPath(); // if code gets here, Exception thrown since setMappingPath() requires an argument
         }
 
         return $this->mapping_file_path;
