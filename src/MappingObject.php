@@ -5,6 +5,7 @@ namespace Dynamic\ClassNameUpdate;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use Symfony\Component\Yaml\Yaml;
+use SilverStripe\Dev\Debug;
 
 /**
  * Class MappingObject

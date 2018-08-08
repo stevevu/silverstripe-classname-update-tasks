@@ -8,6 +8,7 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
+use SilverStripe\Dev\Debug;
 
 /**
  * Class DatabaseClassNameUpdateTask
@@ -51,16 +52,33 @@ class DatabaseClassNameUpdateTask extends BuildTask
     public function run($request, $mapping = [])
     {
         if (empty($mapping)) {
-            if (!$this->config()->get('upgrade_file_path') || !file_exists($this->config()->get('upgrade_file_path'))) {
+			$update_file_path = $this->config()->get('upgrade_file_path');
+            if (!$update_file_path) {
                 $class = static::class;
                 echo "You must specify the configuration variable: 'upgrade_file_path' for '{$class}'\n";
                 return;
             }
-            $mapping = $this->getMappingObject();
+			else {
+				if (is_array($update_file_path)) {
+					foreach ($update_file_path as $filePath) {
+						if ($this->isFileExists($filePath)) {
+							$mapping = $this->getMappingObject($filePath);
+							$this->updateClassNameColumns($mapping);
+						}
+					}
+				}
+				else {
+					if ($this->isFileExists($update_file_path)) {
+						$mapping = $this->getMappingObject($update_file_path);
+						$this->updateClassNameColumns($mapping);
+					}
+				}
+			}
         }
 
-        $this->updateClassNameColumns($mapping);
-
+		else {
+			$this->updateClassNameColumns($mapping);
+		}
         echo "Database ClassName data has been updated\n";
     }
 
@@ -69,6 +87,8 @@ class DatabaseClassNameUpdateTask extends BuildTask
      */
     protected function updateClassNameColumns($mapping)
     {
+Debug::dump($mapping);
+Debug::dump($mapping === (array)$mapping);
         $mapping = ($mapping === (array)$mapping) ? $mapping : $this->getMapping();
         foreach ($mapping as $key => $val) {
             $ancestry = ClassInfo::ancestry($val);
@@ -105,10 +125,10 @@ class DatabaseClassNameUpdateTask extends BuildTask
     /**
      * @return $this
      */
-    public function setMappingObject()
+    public function setMappingObject($filePath)
     {
         $mapping = MappingObject::singleton();
-        $mapping->setMappingPath($this->config()->get('upgrade_file_path'));
+        $mapping->setMappingPath($filePath);
 
         $this->mapping_object = $mapping;
 
@@ -118,12 +138,9 @@ class DatabaseClassNameUpdateTask extends BuildTask
     /**
      * @return mixed
      */
-    protected function getMappingObject()
+    protected function getMappingObject($filePath = null)
     {
-        if (!$this->mapping instanceof MappingObject) {
-            $this->setMappingObject();
-        }
-
+        $this->setMappingObject($filePath);
         return $this->mapping_object;
     }
 
@@ -132,6 +149,7 @@ class DatabaseClassNameUpdateTask extends BuildTask
      */
     protected function setMapping()
     {
+Debug::dump();
         $this->mapping = $this->getMappingObject()->getUpgradeMapping();
 
         return $this;
@@ -142,6 +160,7 @@ class DatabaseClassNameUpdateTask extends BuildTask
      */
     protected function getMapping()
     {
+Debug::dump(["Inside Task->getMapping(): this->mapping", $this->mapping]);
         if (!$this->mapping) {
             $this->setMapping();
         }
@@ -160,4 +179,13 @@ class DatabaseClassNameUpdateTask extends BuildTask
             yield $object;
         }
     }
+
+	private function isFileExists($filePath) {
+		$isFileExists = true;
+		if (!file_exists($filePath)) {
+			$isFileExists = false;
+			echo ("WARNING: $filePath does not exist, skipping\n");
+		}
+		return $isFileExists;
+	}
 }
