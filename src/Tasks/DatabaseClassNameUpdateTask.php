@@ -49,7 +49,7 @@ class DatabaseClassNameUpdateTask extends BuildTask
     /**
      * @var string
      */
-    protected $description = "Update ClassName data for a SilverStripe 3 to SilverStripe 4 migration. Be sure to set the absolute path to the .upgrade.yml file for this task before running it or nothing will happen.";
+    protected $description = "Update ClassName data for a SilverStripe 3 to SilverStripe 4 migration. Be sure to set the absolute path to the .upgrade.yml file(s) for this task before running it or nothing will happen.";
 
     /**
      * @param \SilverStripe\Control\HTTPRequest $request
@@ -64,6 +64,8 @@ class DatabaseClassNameUpdateTask extends BuildTask
                 return;
             }
 			else {
+
+				// array of mapping files
 				if (is_array($update_file_path)) {
 					foreach ($update_file_path as $filePath) {
 						if ($this->isFileExists($filePath)) {
@@ -74,6 +76,8 @@ class DatabaseClassNameUpdateTask extends BuildTask
 						}
 					}
 				}
+
+				// one mapping file
 				else {
 					if ($this->isFileExists($update_file_path)) {
 						$this->current_file_path = $update_file_path;
